@@ -1,0 +1,19 @@
+service: comms-interceptor
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-jetpack
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-west-1
+
+functions:
+  api:
+    handler: dist/lambda/lambda.handler
+    events:
+      - http:
+          method: any
+          path: /{proxy+}
