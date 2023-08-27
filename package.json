@@ -27,7 +27,8 @@
     "@vendia/serverless-express": "^4.10.4",
     "joi": "^17.10.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "trilat": "^1.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -62,7 +63,11 @@
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
-    "modulePathIgnorePatterns": ["src/main.ts", "src/lambda/.*", ".module.ts"],
+    "modulePathIgnorePatterns": [
+      "src/main.ts",
+      "src/lambda/.*",
+      ".module.ts"
+    ],
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },

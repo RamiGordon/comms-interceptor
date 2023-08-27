@@ -3,6 +3,8 @@ import { CommunicationInterpreterService } from '../comms-interpreter.service';
 import { SatelliteMessagesDto } from '../dto/satellite-messages.dto';
 import { BadRequestException } from '@nestjs/common';
 
+jest.mock('trilat', () => jest.fn().mockReturnValue([2, 3]));
+
 describe('CommunicationInterpreterService', () => {
   let service: CommunicationInterpreterService;
 
@@ -44,7 +46,7 @@ describe('CommunicationInterpreterService', () => {
       expect(response).toStrictEqual([2, 3]);
     });
 
-    it('should return the location based on two distances', () => {
+    it('should return an error based on two distances', () => {
       const payloadMock = new SatelliteMessagesDto([
         {
           name: 'skywalker',
@@ -57,9 +59,11 @@ describe('CommunicationInterpreterService', () => {
           message: ['este', '', 'un', '', ''],
         },
       ]);
-      const response = service.topSecret(payloadMock);
 
-      expect(response).toStrictEqual([2, 3]);
+      expect(() => service.topSecret(payloadMock)).toThrow(BadRequestException);
+      expect(() => service.topSecret(payloadMock)).toThrowError(
+        "There is not enough information to determine the message or the sender's position.",
+      );
     });
 
     it('should return an error based on one distance', () => {
