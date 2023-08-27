@@ -1,6 +1,10 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UsePipes } from '@nestjs/common';
 import { CommunicationInterpreterService } from './comms-interpreter.service';
-import { SatelliteMessagesDto } from './dto/satellite-messages.dto';
+import {
+  SatelliteMessagesDto,
+  SatelliteMessagesDtoSchema,
+} from './dto/satellite-messages.dto';
+import { JoiValidationPipe } from '../pipes/joi-validation.pipe';
 
 @Controller('comms-interpreter')
 export class CommunicationInterpreterController {
@@ -9,6 +13,7 @@ export class CommunicationInterpreterController {
   ) {}
 
   @Post('topsecret')
+  @UsePipes(new JoiValidationPipe(SatelliteMessagesDtoSchema))
   topsecret(
     @Body()
     satteliteMessages: SatelliteMessagesDto,
