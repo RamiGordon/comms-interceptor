@@ -35,11 +35,11 @@ export class CommunicationInterpreterService {
     const [kenobiX, kenobiY] = kenobiLocation;
     const [skywalkerX, skywalkerY] = skywalkerLocation;
     const [satoX, satoY] = satoLocation;
-    const [r1, r2, r3] = distances;
+    const [kenobiR, skywalkerR, satoR] = distances;
     const input = [
-      [kenobiX, kenobiY, r1],
-      [skywalkerX, skywalkerY, r2],
-      [satoX, satoY, r3],
+      [kenobiX, kenobiY, kenobiR],
+      [skywalkerX, skywalkerY, skywalkerR],
+      [satoX, satoY, satoR],
     ];
 
     return trilat(input);
