@@ -25,6 +25,7 @@ export class CommunicationInterpreterService {
 
   private getLocation(distances: number[]): number[] | null {
     this.logger.log({ length: distances.length });
+
     return distances.length > 1 ? [2, 3] : null;
   }
 }

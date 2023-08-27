@@ -9,7 +9,7 @@ describe('JoiValidationPipe', () => {
   });
   const pipe = new JoiValidationPipe(schema);
 
-  it('should transform valueif it passes validation', () => {
+  it('should transform value if it passes validation', () => {
     const value = { name: 'John Snow', age: 33 };
     const transformedValue = pipe.transform(value, Object.create({}));
 
