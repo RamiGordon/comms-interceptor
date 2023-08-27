@@ -62,6 +62,7 @@
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
+    "modulePathIgnorePatterns": ["src/main.ts", "src/lambda/.*", ".module.ts"],
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
