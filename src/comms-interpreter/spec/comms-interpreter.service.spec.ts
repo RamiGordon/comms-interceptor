@@ -77,7 +77,7 @@ describe('CommunicationInterpreterService', () => {
       );
     });
 
-    it('should return the decoded message if it has all data needed', () => {
+    it('should return the decoded message if it has all the required data', () => {
       const payloadMock = new SatelliteMessagesDto([
         {
           name: 'kenobi',
@@ -100,7 +100,7 @@ describe('CommunicationInterpreterService', () => {
       expect(message).toStrictEqual('este es un mensaje secreto');
     });
 
-    it('should return an error', () => {
+    it('should return an error if it does not have enough information to decode the message', () => {
       const payloadMock = new SatelliteMessagesDto([
         {
           name: 'kenobi',
