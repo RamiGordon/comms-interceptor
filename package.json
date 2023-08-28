@@ -24,6 +24,7 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.1.8",
     "@vendia/serverless-express": "^4.10.4",
     "joi": "^17.10.0",
     "reflect-metadata": "^0.1.13",
@@ -62,7 +63,11 @@
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
-    "modulePathIgnorePatterns": ["src/main.ts", "src/lambda/.*", ".module.ts"],
+    "modulePathIgnorePatterns": [
+      "src/main.ts",
+      "src/lambda/.*",
+      ".module.ts"
+    ],
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
