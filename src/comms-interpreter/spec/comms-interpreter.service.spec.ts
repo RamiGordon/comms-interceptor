@@ -39,9 +39,9 @@ describe('CommunicationInterpreterService', () => {
           message: ['este', '', 'un', '', ''],
         },
       ]);
-      const response = service.topSecret(payloadMock);
+      const { position } = service.topSecret(payloadMock);
 
-      expect(response).toStrictEqual([2, 3]);
+      expect(position).toStrictEqual({ x: 2, y: 3 });
     });
 
     it('should return the location based on two distances', () => {
@@ -49,7 +49,7 @@ describe('CommunicationInterpreterService', () => {
         {
           name: 'skywalker',
           distance: 115.5,
-          message: ['', 'es', '', '', 'secreto'],
+          message: ['', 'es', '', 'mensaje', 'secreto'],
         },
         {
           name: 'sato',
@@ -57,9 +57,9 @@ describe('CommunicationInterpreterService', () => {
           message: ['este', '', 'un', '', ''],
         },
       ]);
-      const response = service.topSecret(payloadMock);
+      const { position } = service.topSecret(payloadMock);
 
-      expect(response).toStrictEqual([2, 3]);
+      expect(position).toStrictEqual({ x: 2, y: 3 });
     });
 
     it('should return an error based on one distance', () => {
