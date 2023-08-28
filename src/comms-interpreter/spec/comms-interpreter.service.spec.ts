@@ -76,5 +76,53 @@ describe('CommunicationInterpreterService', () => {
         "There is not enough information to determine the message or the sender's position.",
       );
     });
+
+    it('should return the decoded message if it has all data needed', () => {
+      const payloadMock = new SatelliteMessagesDto([
+        {
+          name: 'kenobi',
+          distance: 100.0,
+          message: ['este', '', '', 'mensaje', ''],
+        },
+        {
+          name: 'skywalker',
+          distance: 115.5,
+          message: ['', 'es', '', '', 'secreto'],
+        },
+        {
+          name: 'sato',
+          distance: 142.7,
+          message: ['este', '', 'un', '', ''],
+        },
+      ]);
+      const { message } = service.topSecret(payloadMock);
+
+      expect(message).toStrictEqual('este es un mensaje secreto');
+    });
+
+    it('should return an error', () => {
+      const payloadMock = new SatelliteMessagesDto([
+        {
+          name: 'kenobi',
+          distance: 100.0,
+          message: ['', '', '', 'mensaje', ''],
+        },
+        {
+          name: 'skywalker',
+          distance: 115.5,
+          message: ['', 'es', '', '', 'secreto'],
+        },
+        {
+          name: 'sato',
+          distance: 142.7,
+          message: ['', '', 'un', '', ''],
+        },
+      ]);
+
+      expect(() => service.topSecret(payloadMock)).toThrow(BadRequestException);
+      expect(() => service.topSecret(payloadMock)).toThrowError(
+        "There is not enough information to determine the message or the sender's position.",
+      );
+    });
   });
 });
