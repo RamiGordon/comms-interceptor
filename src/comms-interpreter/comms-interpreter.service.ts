@@ -1,9 +1,13 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { SatelliteMessagesDto } from './dto/satellite-messages.dto';
 import { SatelliteMessage } from './entities/satellite-message.entity';
+import { SatelliteDataService } from '../satellite-data/satellite-data.service';
+import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class CommunicationInterpreterService {
+  private satelliteDataService = new SatelliteDataService();
   private logger = new Logger();
 
   topSecret(satteliteMessagesDto: SatelliteMessagesDto): {
@@ -25,6 +29,37 @@ export class CommunicationInterpreterService {
     return { position: { x, y }, message };
   }
 
+  captureSatelliteMessage(
+    satellite_name: string,
+    topsecretSplitCreateDto: TopsecretSplitCreateDto,
+  ): void {
+    const { distance, message } = topsecretSplitCreateDto;
+    const satelliteData = new SatelliteMessage({
+      name: satellite_name,
+      distance,
+      message,
+    });
+
+    this.logger.log(`storing satellite data for '${satellite_name}'`);
+
+    this.satelliteDataService.addSatellite(satelliteData);
+  }
+
+  decodeMessageAndPosition(): {
+    position: { x: number; y: number };
+    message: string;
+  } {
+    const satelliteMessages = this.satelliteDataService.getAll();
+    const satelliteMessagesDto = new SatelliteMessagesDto(satelliteMessages);
+    const response = this.topSecret(satelliteMessagesDto);
+
+    if (!isEmpty(response)) {
+      this.satelliteDataService.reset();
+    }
+
+    return response;
+  }
+
   private getDistances(satellites: SatelliteMessage[]): number[] {
     return satellites.map((satellite) => satellite.distance);
   }
@@ -34,8 +69,6 @@ export class CommunicationInterpreterService {
   }
 
   private getLocation(distances: number[]): number[] | null {
-    this.logger.log({ length: distances.length });
-
     return distances.length > 1 ? [2, 3] : null;
   }
 
@@ -46,6 +79,12 @@ export class CommunicationInterpreterService {
       (max, message) => Math.max(max, message.length),
       0,
     );
+
+    if (messageLength === 0) {
+      this.logger.error('No messages to decode');
+
+      return null;
+    }
     const decodedMessage = [];
     let error = false;
 
