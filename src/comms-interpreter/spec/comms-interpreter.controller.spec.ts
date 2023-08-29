@@ -1,26 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommunicationInterpreterController } from '../comms-interpreter.controller';
-import { CommunicationInterpreterService } from '../comms-interpreter.service';
+import { CommsInterpreterController } from '../comms-interpreter.controller';
+import { CommsInterpreterService } from '../comms-interpreter.service';
 import { SatelliteMessagesDto } from '../dto/satellite-messages.dto';
 import { TopsecretSplitCreateDto } from '../dto/topsecret-split-create.dto';
 import { BadRequestException } from '@nestjs/common';
 
-describe('CommunicationInterpreterController', () => {
-  let controller: CommunicationInterpreterController;
-  let service: CommunicationInterpreterService;
+describe('CommsInterpreterController', () => {
+  let controller: CommsInterpreterController;
+  let service: CommsInterpreterService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [CommunicationInterpreterController],
-      providers: [CommunicationInterpreterService],
+      controllers: [CommsInterpreterController],
+      providers: [CommsInterpreterService],
     }).compile();
 
-    controller = module.get<CommunicationInterpreterController>(
-      CommunicationInterpreterController,
+    controller = module.get<CommsInterpreterController>(
+      CommsInterpreterController,
     );
-    service = module.get<CommunicationInterpreterService>(
-      CommunicationInterpreterService,
-    );
+    service = module.get<CommsInterpreterService>(CommsInterpreterService);
   });
 
   it('should be defined', () => {

@@ -4,16 +4,14 @@ import { SatelliteMessage } from './entities/satellite-message.entity';
 import { SatelliteDataService } from '../satellite-data/satellite-data.service';
 import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
 import { isEmpty } from 'lodash';
+import { TopsecretResponseDto } from './dto/topsecret-response.dto';
 
 @Injectable()
-export class CommunicationInterpreterService {
+export class CommsInterpreterService {
   private satelliteDataService = new SatelliteDataService();
   private logger = new Logger();
 
-  topSecret(satteliteMessagesDto: SatelliteMessagesDto): {
-    position: { x: number; y: number };
-    message: string;
-  } {
+  topSecret(satteliteMessagesDto: SatelliteMessagesDto): TopsecretResponseDto {
     const distances = this.getDistances(satteliteMessagesDto.satellites);
     const position = this.getLocation(distances);
     const messages = this.getMessages(satteliteMessagesDto.satellites);
@@ -45,10 +43,7 @@ export class CommunicationInterpreterService {
     this.satelliteDataService.create(satelliteData);
   }
 
-  decodeMessageAndPosition(): {
-    position: { x: number; y: number };
-    message: string;
-  } {
+  decodeMessageAndPosition(): TopsecretResponseDto {
     const satelliteMessages = this.satelliteDataService.findAll();
     const satelliteMessagesDto = new SatelliteMessagesDto(satelliteMessages);
     const response = this.topSecret(satelliteMessagesDto);

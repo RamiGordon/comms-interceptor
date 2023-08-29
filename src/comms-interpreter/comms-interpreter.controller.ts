@@ -8,18 +8,19 @@ import {
   HttpStatus,
   Get,
 } from '@nestjs/common';
-import { CommunicationInterpreterService } from './comms-interpreter.service';
+import { CommsInterpreterService } from './comms-interpreter.service';
 import {
   SatelliteMessagesDto,
   SatelliteMessagesDtoSchema,
 } from './dto/satellite-messages.dto';
 import { JoiValidationPipe } from '../pipes/joi-validation.pipe';
 import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
+import { TopsecretResponseDto } from './dto/topsecret-response.dto';
 
 @Controller('comms-interpreter')
-export class CommunicationInterpreterController {
+export class CommsInterpreterController {
   constructor(
-    private readonly communicationInterpreterService: CommunicationInterpreterService,
+    private readonly commsInterpreterService: CommsInterpreterService,
   ) {}
 
   @Post('topsecret')
@@ -27,9 +28,9 @@ export class CommunicationInterpreterController {
   @HttpCode(HttpStatus.OK)
   topsecret(
     @Body()
-    satteliteMessages: SatelliteMessagesDto,
-  ) {
-    return this.communicationInterpreterService.topSecret(satteliteMessages);
+    satelliteMessagesDto: SatelliteMessagesDto,
+  ): TopsecretResponseDto {
+    return this.commsInterpreterService.topSecret(satelliteMessagesDto);
   }
 
   // TODO: add joi validation schema
@@ -39,7 +40,7 @@ export class CommunicationInterpreterController {
     @Param('satellite_name') satelliteName: string,
     @Body() topsecretSplitCreateDto: TopsecretSplitCreateDto,
   ) {
-    return this.communicationInterpreterService.captureSatelliteMessage(
+    return this.commsInterpreterService.captureSatelliteMessage(
       satelliteName,
       topsecretSplitCreateDto,
     );
@@ -47,7 +48,7 @@ export class CommunicationInterpreterController {
 
   @Get('topsecret_split')
   @HttpCode(HttpStatus.OK)
-  decodeMessageAndPosition() {
-    return this.communicationInterpreterService.decodeMessageAndPosition();
+  decodeMessageAndPosition(): TopsecretResponseDto {
+    return this.commsInterpreterService.decodeMessageAndPosition();
   }
 }
