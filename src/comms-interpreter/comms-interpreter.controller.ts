@@ -14,7 +14,7 @@ import {
   SatelliteMessagesDtoSchema,
 } from './dto/satellite-messages.dto';
 import { JoiValidationPipe } from '../pipes/joi-validation.pipe';
-import { TopsecretSplitCreateDto } from 'src/comms-interpreter/dto/topsecret-split-create.dto';
+import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
 
 @Controller('comms-interpreter')
 export class CommunicationInterpreterController {
