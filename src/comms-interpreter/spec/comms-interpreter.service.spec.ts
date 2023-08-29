@@ -1,19 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommunicationInterpreterService } from '../comms-interpreter.service';
+import { CommsInterpreterService } from '../comms-interpreter.service';
 import { SatelliteMessagesDto } from '../dto/satellite-messages.dto';
 import { BadRequestException } from '@nestjs/common';
 
-describe('CommunicationInterpreterService', () => {
-  let service: CommunicationInterpreterService;
+describe('CommsInterpreterService', () => {
+  let service: CommsInterpreterService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CommunicationInterpreterService],
+      providers: [CommsInterpreterService],
     }).compile();
 
-    service = module.get<CommunicationInterpreterService>(
-      CommunicationInterpreterService,
-    );
+    service = module.get<CommsInterpreterService>(CommsInterpreterService);
   });
 
   it('should be defined', () => {
