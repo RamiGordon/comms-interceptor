@@ -42,14 +42,14 @@ export class CommunicationInterpreterService {
 
     this.logger.log(`storing satellite data for '${satellite_name}'`);
 
-    this.satelliteDataService.addSatellite(satelliteData);
+    this.satelliteDataService.create(satelliteData);
   }
 
   decodeMessageAndPosition(): {
     position: { x: number; y: number };
     message: string;
   } {
-    const satelliteMessages = this.satelliteDataService.getAll();
+    const satelliteMessages = this.satelliteDataService.findAll();
     const satelliteMessagesDto = new SatelliteMessagesDto(satelliteMessages);
     const response = this.topSecret(satelliteMessagesDto);
 
