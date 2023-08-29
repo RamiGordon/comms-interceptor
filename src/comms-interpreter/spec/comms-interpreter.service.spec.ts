@@ -39,13 +39,51 @@ describe('CommunicationInterpreterService', () => {
           message: ['este', '', 'un', '', ''],
         },
       ]);
-      const response = service.topSecret(payloadMock);
+      const { position } = service.topSecret(payloadMock);
 
-      expect(response).toStrictEqual([2, 3]);
+      expect(position).toStrictEqual({ x: 2, y: 3 });
     });
 
     it('should return the location based on two distances', () => {
       const payloadMock = new SatelliteMessagesDto([
+        {
+          name: 'skywalker',
+          distance: 115.5,
+          message: ['', 'es', '', 'mensaje', 'secreto'],
+        },
+        {
+          name: 'sato',
+          distance: 142.7,
+          message: ['este', '', 'un', '', ''],
+        },
+      ]);
+      const { position } = service.topSecret(payloadMock);
+
+      expect(position).toStrictEqual({ x: 2, y: 3 });
+    });
+
+    it('should return an error based on one distance', () => {
+      const payloadMock = new SatelliteMessagesDto([
+        {
+          name: 'sato',
+          distance: 142.7,
+          message: ['este', '', 'un', '', ''],
+        },
+      ]);
+
+      expect(() => service.topSecret(payloadMock)).toThrow(BadRequestException);
+      expect(() => service.topSecret(payloadMock)).toThrowError(
+        "There is not enough information to determine the message or the sender's position.",
+      );
+    });
+
+    it('should return the decoded message if it has all the required data', () => {
+      const payloadMock = new SatelliteMessagesDto([
+        {
+          name: 'kenobi',
+          distance: 100.0,
+          message: ['este', '', '', 'mensaje', ''],
+        },
         {
           name: 'skywalker',
           distance: 115.5,
@@ -57,17 +95,27 @@ describe('CommunicationInterpreterService', () => {
           message: ['este', '', 'un', '', ''],
         },
       ]);
-      const response = service.topSecret(payloadMock);
+      const { message } = service.topSecret(payloadMock);
 
-      expect(response).toStrictEqual([2, 3]);
+      expect(message).toStrictEqual('este es un mensaje secreto');
     });
 
-    it('should return an error based on one distance', () => {
+    it('should return an error if it does not have enough information to decode the message', () => {
       const payloadMock = new SatelliteMessagesDto([
+        {
+          name: 'kenobi',
+          distance: 100.0,
+          message: ['', '', '', 'mensaje', ''],
+        },
+        {
+          name: 'skywalker',
+          distance: 115.5,
+          message: ['', 'es', '', '', 'secreto'],
+        },
         {
           name: 'sato',
           distance: 142.7,
-          message: ['este', '', 'un', '', ''],
+          message: ['', '', 'un', '', ''],
         },
       ]);
 

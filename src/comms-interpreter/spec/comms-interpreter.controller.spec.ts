@@ -68,7 +68,7 @@ describe('CommunicationInterpreterController', () => {
         message: ['este', '', 'un', '', ''],
       },
     ]);
-    const mockResponse = [2, 3];
+    const mockResponse = { position: { x: 2, y: 3 }, message: '' };
     const topsecretSpy = jest
       .spyOn(service, 'topSecret')
       .mockReturnValue(mockResponse);
