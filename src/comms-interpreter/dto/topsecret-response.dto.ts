@@ -9,7 +9,7 @@ export class TopsecretResponseDto {
 
   @ApiProperty({
     example: { x: 2, y: 3 },
-    description: 'The decoded message',
+    description: "the sender's position",
   })
   position: { x: number; y: number };
 
