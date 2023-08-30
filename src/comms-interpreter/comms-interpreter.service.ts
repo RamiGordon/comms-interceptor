@@ -5,6 +5,14 @@ import { SatelliteDataService } from '../satellite-data/satellite-data.service';
 import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
 import { isEmpty } from 'lodash';
 import { TopsecretResponseDto } from './dto/topsecret-response.dto';
+import {
+  kenobiLocation,
+  satoLocation,
+  skywalkerLocation,
+} from '../utils/satellite-locations';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const trilat = require('trilat');
 
 @Injectable()
 export class CommsInterpreterService {
@@ -59,12 +67,22 @@ export class CommsInterpreterService {
     return satellites.map((satellite) => satellite.distance);
   }
 
-  private getMessages(satellites: SatelliteMessage[]): string[][] {
-    return satellites.map((satellite) => satellite.message);
+  private getLocation(distances: number[]): number[] {
+    const [kenobiX, kenobiY] = kenobiLocation;
+    const [skywalkerX, skywalkerY] = skywalkerLocation;
+    const [satoX, satoY] = satoLocation;
+    const [kenobiR, skywalkerR, satoR] = distances;
+    const input = [
+      [kenobiX, kenobiY, kenobiR],
+      [skywalkerX, skywalkerY, skywalkerR],
+      [satoX, satoY, satoR],
+    ];
+
+    return trilat(input);
   }
 
-  private getLocation(distances: number[]): number[] | null {
-    return distances.length > 1 ? [2, 3] : null;
+  private getMessages(satellites: SatelliteMessage[]): string[][] {
+    return satellites.map((satellite) => satellite.message);
   }
 
   private getMessage(messages: string[][]): string | null {
