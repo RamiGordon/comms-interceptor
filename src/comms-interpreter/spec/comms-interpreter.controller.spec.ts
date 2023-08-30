@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommsInterpreterController } from '../comms-interpreter.controller';
 import { CommsInterpreterService } from '../comms-interpreter.service';
-import { SatelliteMessagesDto } from '../dto/topsecret.dto';
+import { TopsecretDto } from '../dto/topsecret.dto';
 import { TopsecretSplitCreateDto } from '../dto/topsecret-split-create.dto';
 import { NotFoundException } from '@nestjs/common';
 
@@ -27,7 +27,7 @@ describe('CommsInterpreterController', () => {
 
   describe('/topsecret (POST)', () => {
     it('should call topSecret method from comms service', () => {
-      const payloadMock = new SatelliteMessagesDto([
+      const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
           distance: 100.0,
@@ -52,7 +52,7 @@ describe('CommsInterpreterController', () => {
     });
 
     it('should return topsecret response', () => {
-      const payloadMock = new SatelliteMessagesDto([
+      const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
           distance: 100.0,
