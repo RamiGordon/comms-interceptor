@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommsInterpreterService } from '../comms-interpreter.service';
-import { SatelliteMessagesDto } from '../dto/satellite-messages.dto';
-import { BadRequestException } from '@nestjs/common';
+import { SatelliteMessagesDto } from '../dto/topsecret.dto';
+import { NotFoundException } from '@nestjs/common';
 
 describe('CommsInterpreterService', () => {
   let service: CommsInterpreterService;
@@ -69,7 +69,7 @@ describe('CommsInterpreterService', () => {
         },
       ]);
 
-      expect(() => service.topSecret(payloadMock)).toThrow(BadRequestException);
+      expect(() => service.topSecret(payloadMock)).toThrow(NotFoundException);
       expect(() => service.topSecret(payloadMock)).toThrowError(
         "There is not enough information to determine the message or the sender's position.",
       );
@@ -117,7 +117,7 @@ describe('CommsInterpreterService', () => {
         },
       ]);
 
-      expect(() => service.topSecret(payloadMock)).toThrow(BadRequestException);
+      expect(() => service.topSecret(payloadMock)).toThrow(NotFoundException);
       expect(() => service.topSecret(payloadMock)).toThrowError(
         "There is not enough information to determine the message or the sender's position.",
       );
