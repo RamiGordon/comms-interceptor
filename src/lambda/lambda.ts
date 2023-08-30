@@ -13,6 +13,11 @@ export const handler = async (event, context) => {
       .setDescription(
         'Endpoints for intercepting and storing transmissions from spacecraft, enabling the analysis and logging of intercepted messages, signals, and communications within a galactic context.',
       )
+      .addServer(
+        'https://1kj1uy2c69.execute-api.us-west-1.amazonaws.com/dev',
+        'aws',
+      )
+      .addServer('http://localhost:3000', 'local')
       .setVersion('1.0')
       .build();
 

@@ -9,14 +9,13 @@ import {
   Get,
 } from '@nestjs/common';
 import { CommsInterpreterService } from './comms-interpreter.service';
-import {
-  SatelliteMessagesDto,
-  SatelliteMessagesDtoSchema,
-} from './dto/satellite-messages.dto';
+import { TopsecretDto, TopsecretDtoSchema } from './dto/topsecret.dto';
 import { JoiValidationPipe } from '../pipes/joi-validation.pipe';
 import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
 import { TopsecretResponseDto } from './dto/topsecret-response.dto';
+import { ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 
+@ApiTags('comms-interpreter')
 @Controller('comms-interpreter')
 export class CommsInterpreterController {
   constructor(
@@ -24,11 +23,17 @@ export class CommsInterpreterController {
   ) {}
 
   @Post('topsecret')
-  @UsePipes(new JoiValidationPipe(SatelliteMessagesDtoSchema))
+  @UsePipes(new JoiValidationPipe(TopsecretDtoSchema))
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Message and Position decoded',
+    type: TopsecretResponseDto,
+  })
+  @ApiBody({ type: TopsecretDto })
   topsecret(
     @Body()
-    satelliteMessagesDto: SatelliteMessagesDto,
+    satelliteMessagesDto: TopsecretDto,
   ): TopsecretResponseDto {
     return this.commsInterpreterService.topSecret(satelliteMessagesDto);
   }
@@ -36,6 +41,11 @@ export class CommsInterpreterController {
   // TODO: add joi validation schema
   @Post('topsecret_split/:satellite_name')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Satellite message captured',
+  })
+  @ApiBody({ type: TopsecretSplitCreateDto })
   captureSatelliteMessage(
     @Param('satellite_name') satelliteName: string,
     @Body() topsecretSplitCreateDto: TopsecretSplitCreateDto,
@@ -48,6 +58,11 @@ export class CommsInterpreterController {
 
   @Get('topsecret_split')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Message and Position decoded',
+    type: TopsecretResponseDto,
+  })
   decodeMessageAndPosition(): TopsecretResponseDto {
     return this.commsInterpreterService.decodeMessageAndPosition();
   }

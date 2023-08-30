@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { SatelliteMessagesDto } from './dto/satellite-messages.dto';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { TopsecretDto } from './dto/topsecret.dto';
 import { SatelliteMessage } from './entities/satellite-message.entity';
 import { SatelliteDataService } from '../satellite-data/satellite-data.service';
 import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
@@ -19,14 +19,14 @@ export class CommsInterpreterService {
   private satelliteDataService = new SatelliteDataService();
   private logger = new Logger();
 
-  topSecret(satteliteMessagesDto: SatelliteMessagesDto): TopsecretResponseDto {
+  topSecret(satteliteMessagesDto: TopsecretDto): TopsecretResponseDto {
     const distances = this.getDistances(satteliteMessagesDto.satellites);
     const position = this.getLocation(distances);
     const messages = this.getMessages(satteliteMessagesDto.satellites);
     const message = this.getMessage(messages);
 
     if (!position || !message) {
-      throw new BadRequestException(
+      throw new NotFoundException(
         "There is not enough information to determine the message or the sender's position.",
       );
     }
@@ -53,7 +53,7 @@ export class CommsInterpreterService {
 
   decodeMessageAndPosition(): TopsecretResponseDto {
     const satelliteMessages = this.satelliteDataService.findAll();
-    const satelliteMessagesDto = new SatelliteMessagesDto(satelliteMessages);
+    const satelliteMessagesDto = new TopsecretDto(satelliteMessages);
     const response = this.topSecret(satelliteMessagesDto);
 
     if (!isEmpty(response)) {

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommsInterpreterService } from '../comms-interpreter.service';
-import { SatelliteMessagesDto } from '../dto/satellite-messages.dto';
-import { BadRequestException } from '@nestjs/common';
+import { TopsecretDto } from '../dto/topsecret.dto';
+import { NotFoundException } from '@nestjs/common';
 
 jest.mock('trilat', () => jest.fn().mockReturnValue([2, 3]));
 
@@ -22,7 +22,7 @@ describe('CommsInterpreterService', () => {
 
   describe('topSecret', () => {
     it('should return the location based on three distances', () => {
-      const payloadMock = new SatelliteMessagesDto([
+      const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
           distance: 100.0,
@@ -45,7 +45,7 @@ describe('CommsInterpreterService', () => {
     });
 
     it('should return an error based on two distances', () => {
-      const payloadMock = new SatelliteMessagesDto([
+      const payloadMock = new TopsecretDto([
         {
           name: 'skywalker',
           distance: 115.5,
@@ -58,14 +58,14 @@ describe('CommsInterpreterService', () => {
         },
       ]);
 
-      expect(() => service.topSecret(payloadMock)).toThrow(BadRequestException);
+      expect(() => service.topSecret(payloadMock)).toThrow(NotFoundException);
       expect(() => service.topSecret(payloadMock)).toThrowError(
         "There is not enough information to determine the message or the sender's position.",
       );
     });
 
     it('should return an error based on one distance', () => {
-      const payloadMock = new SatelliteMessagesDto([
+      const payloadMock = new TopsecretDto([
         {
           name: 'sato',
           distance: 142.7,
@@ -73,14 +73,14 @@ describe('CommsInterpreterService', () => {
         },
       ]);
 
-      expect(() => service.topSecret(payloadMock)).toThrow(BadRequestException);
+      expect(() => service.topSecret(payloadMock)).toThrow(NotFoundException);
       expect(() => service.topSecret(payloadMock)).toThrowError(
         "There is not enough information to determine the message or the sender's position.",
       );
     });
 
     it('should return the decoded message if it has all the required data', () => {
-      const payloadMock = new SatelliteMessagesDto([
+      const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
           distance: 100.0,
@@ -103,7 +103,7 @@ describe('CommsInterpreterService', () => {
     });
 
     it('should return an error if it does not have enough information to decode the message', () => {
-      const payloadMock = new SatelliteMessagesDto([
+      const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
           distance: 100.0,
@@ -121,7 +121,7 @@ describe('CommsInterpreterService', () => {
         },
       ]);
 
-      expect(() => service.topSecret(payloadMock)).toThrow(BadRequestException);
+      expect(() => service.topSecret(payloadMock)).toThrow(NotFoundException);
       expect(() => service.topSecret(payloadMock)).toThrowError(
         "There is not enough information to determine the message or the sender's position.",
       );
