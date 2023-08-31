@@ -88,34 +88,25 @@ export class CommsInterpreterService {
   private getMessage(messages: string[][]): string | null {
     this.logger.log('Decoding message...');
 
-    const messageLength = messages.reduce(
-      (max, message) => Math.max(max, message.length),
-      0,
+    const maxLength = Math.max(...messages.map((message) => message.length));
+    const messageLength = Math.min(
+      ...messages.map((message) => message.length),
     );
-
-    if (messageLength === 0) {
-      this.logger.error('No messages to decode');
-
-      return null;
-    }
     const decodedMessage = [];
-    let error = false;
 
-    for (let i = 0; i < messageLength; i++) {
-      const words = messages.map((message) => message[i] || '');
-      const word = words.find((word) => word !== '');
+    for (let i = 0; i < maxLength; i++) {
+      const words = messages.map((message) => message[i]);
+      const nonEmptyWords = words.filter((word) => !isEmpty(word));
 
-      if (!word) {
-        error = true;
-        this.logger.error(`Partial message: ${decodedMessage.join(' ')}`);
-
-        break;
+      if (nonEmptyWords.length > 0) {
+        if (nonEmptyWords[0] !== decodedMessage[decodedMessage.length - 1]) {
+          decodedMessage.push(nonEmptyWords[0]);
+        }
       }
-      decodedMessage.push(word);
     }
 
-    if (error) {
-      this.logger.error('Error while decoding message. Incomplete message.');
+    if (decodedMessage.length < messageLength) {
+      this.logger.error(`Partial message: ${decodedMessage.join(' ')}`);
 
       return null;
     }

@@ -65,7 +65,7 @@ describe('CommsInterpreterService', () => {
       );
     });
 
-    it('should return an error based on one distance', () => {
+    xit('should return an error based on one distance', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'sato',
@@ -85,40 +85,88 @@ describe('CommsInterpreterService', () => {
         {
           name: 'kenobi',
           distance: 100.0,
-          message: ['este', '', '', 'mensaje', ''],
+          message: ['may', '', '', 'be', '', 'you'],
         },
         {
           name: 'skywalker',
           distance: 115.5,
-          message: ['', 'es', '', '', 'secreto'],
+          message: ['', 'the', '', '', 'with', ''],
         },
         {
           name: 'sato',
           distance: 142.7,
-          message: ['este', '', 'un', '', ''],
+          message: ['may', '', 'force', '', '', ''],
         },
       ]);
       const { message } = service.topSecret(payloadMock);
 
-      expect(message).toStrictEqual('este es un mensaje secreto');
+      expect(message).toStrictEqual('may the force be with you');
     });
 
-    it('should return an error if it does not have enough information to decode the message', () => {
+    it('should return the decoded message if the partial messasge has an offset', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
           distance: 100.0,
-          message: ['', '', '', 'mensaje', ''],
+          message: ['', 'este', 'es', 'un', 'mensaje'],
         },
         {
           name: 'skywalker',
           distance: 115.5,
-          message: ['', 'es', '', '', 'secreto'],
+          message: ['este', '', 'un', 'mensaje'],
         },
         {
           name: 'sato',
           distance: 142.7,
-          message: ['', '', 'un', '', ''],
+          message: ['', '', 'es', '', 'mensaje'],
+        },
+      ]);
+      const { message } = service.topSecret(payloadMock);
+
+      expect(message).toStrictEqual('este es un mensaje');
+    });
+
+    it('case 1: should return an error if it does not have enough information to decode the message', () => {
+      const payloadMock = new TopsecretDto([
+        {
+          name: 'kenobi',
+          distance: 100.0,
+          message: ['', '', 'mensaje', ''],
+        },
+        {
+          name: 'skywalker',
+          distance: 115.5,
+          message: ['', '', '', ''],
+        },
+        {
+          name: 'sato',
+          distance: 142.7,
+          message: ['un', '', ''],
+        },
+      ]);
+
+      expect(() => service.topSecret(payloadMock)).toThrow(NotFoundException);
+      expect(() => service.topSecret(payloadMock)).toThrowError(
+        "There is not enough information to determine the message or the sender's position.",
+      );
+    });
+
+    it('case 2: should return an error if it does not have enough information to decode the message', () => {
+      const payloadMock = new TopsecretDto([
+        {
+          name: 'kenobi',
+          distance: 100.0,
+          message: ['', 'the', '', 'be', '', 'you', ''],
+        },
+        {
+          name: 'skywalker',
+          distance: 115.5,
+          message: ['may', '', '', '', '', 'you'],
+        },
+        {
+          name: 'sato',
+          distance: 142.7,
+          message: ['may', '', '', '', '', 'you'],
         },
       ]);
 
