@@ -42,7 +42,7 @@ describe('CommsInterpreterService', () => {
       expect(position).toBeDefined();
     });
 
-    fit('should return an error based on two distances', () => {
+    it('should return an error based on two distances', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'skywalker',
@@ -59,12 +59,11 @@ describe('CommsInterpreterService', () => {
       expect(() => service.topSecret(payloadMock)).toThrow(NotFoundException);
     });
 
-    // FIXME
-    xit('should return an error based on one distance', () => {
+    it('should return an error based on one distance', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'sato',
-          distance: 142.7,
+          distance: 300,
           message: ['may', 'the', 'force', 'be', 'with', 'you'],
         },
       ]);
@@ -90,7 +89,7 @@ describe('CommsInterpreterService', () => {
         {
           name: 'sato',
           distance: 500,
-          message: ['este', '', 'un', '', ''],
+          message: ['', 'este', '', 'un', '', ''],
         },
       ]);
       const { message } = service.topSecret(payloadMock);
@@ -102,17 +101,17 @@ describe('CommsInterpreterService', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
-          distance: 100.0,
+          distance: 600,
           message: ['may', 'the', 'force', 'be', 'with', 'you'],
         },
         {
           name: 'skywalker',
-          distance: 115.5,
+          distance: 100,
           message: ['may', 'the', 'force', 'be', 'with', 'you'],
         },
         {
           name: 'sato',
-          distance: 142.7,
+          distance: 500,
           message: ['may', 'the', 'force', 'be', 'with', 'you'],
         },
       ]);
@@ -125,17 +124,17 @@ describe('CommsInterpreterService', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
-          distance: 100.0,
+          distance: 600,
           message: ['', '', '', 'mensaje', ''],
         },
         {
           name: 'skywalker',
-          distance: 115.5,
+          distance: 100,
           message: ['', 'es', '', '', 'secreto'],
         },
         {
           name: 'sato',
-          distance: 142.7,
+          distance: 500,
           message: ['', '', 'un', '', ''],
         },
       ]);
@@ -150,17 +149,17 @@ describe('CommsInterpreterService', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
-          distance: 100.0,
+          distance: 600,
           message: ['', 'the', '', 'be', '', 'you', ''],
         },
         {
           name: 'skywalker',
-          distance: 115.5,
+          distance: 100,
           message: ['may', '', '', '', '', 'you'],
         },
         {
           name: 'sato',
-          distance: 142.7,
+          distance: 500,
           message: ['', '', 'force', '', '', ''],
         },
       ]);
