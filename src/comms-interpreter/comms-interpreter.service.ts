@@ -11,7 +11,7 @@ import {
   kenobiLocation,
   satoLocation,
   skywalkerLocation,
-} from '../utils/satellite-locations';
+} from '../utils/satellite-locations.stub';
 
 @Injectable()
 export class CommsInterpreterService {
