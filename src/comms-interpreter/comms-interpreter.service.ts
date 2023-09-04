@@ -6,13 +6,11 @@ import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
 import { isEmpty } from 'lodash';
 import { TopsecretResponseDto } from './dto/topsecret-response.dto';
 import {
+  PRECISION_DELTA,
   kenobiLocation,
   satoLocation,
   skywalkerLocation,
 } from '../utils/satellite-locations';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const trilat = require('trilat');
 
 @Injectable()
 export class CommsInterpreterService {
@@ -67,18 +65,65 @@ export class CommsInterpreterService {
     return satellites.map((satellite) => satellite.distance);
   }
 
-  private getLocation(distances: number[]): number[] {
-    const [kenobiX, kenobiY] = kenobiLocation;
-    const [skywalkerX, skywalkerY] = skywalkerLocation;
-    const [satoX, satoY] = satoLocation;
-    const [kenobiR, skywalkerR, satoR] = distances;
-    const input = [
-      [kenobiX, kenobiY, kenobiR],
-      [skywalkerX, skywalkerY, skywalkerR],
-      [satoX, satoY, satoR],
-    ];
+  private getLocation(distances: number[]): number[] | null {
+    const [Kx, Ky] = kenobiLocation;
+    const [skyX, skyY] = skywalkerLocation;
+    const [Sx, Sy] = satoLocation;
+    const [Dk, Dsky, Ds] = distances;
 
-    return trilat(input);
+    const A = (Ky - Sy) / (Kx - Sx);
+    const B =
+      (-Math.pow(Kx, 2) -
+        Math.pow(Ky, 2) +
+        Math.pow(Sx, 2) +
+        Math.pow(Sy, 2) +
+        Math.pow(Dk, 2) -
+        Math.pow(Ds, 2)) /
+      (2 * Kx - 2 * Sx);
+
+    // Bhaskara constants
+    const a = Math.pow(A, 2) + 1;
+    const b = -2 * A * B - 2 * Kx * A + 2 * Ky;
+    const c =
+      2 * Kx * B +
+      Math.pow(B, 2) +
+      Math.pow(Kx, 2) +
+      Math.pow(Ky, 2) -
+      Math.pow(Dk, 2);
+
+    // Bhaskara delta
+    const delta = Math.pow(b, 2) - 4 * a * c;
+    const error = Math.sign(delta) === -1;
+
+    if (error) {
+      return null;
+    }
+
+    // Bhaskara
+    const yA = (-b + Math.sqrt(delta)) / (2 * a);
+    const yB = (-b - Math.sqrt(delta)) / (2 * a);
+
+    // radical axis
+    const xA = -yA * A + B;
+    const xB = -yB * A + B;
+
+    const solutionA =
+      Math.pow(skyX + xA, 2) + Math.pow(skyY + yA, 2) - Math.pow(Dsky, 2);
+    const solutionB =
+      Math.pow(skyX + xB, 2) + Math.pow(skyY + yB, 2) - Math.pow(Dsky, 2);
+
+    // The three circumferences intersect at a single point
+    if (solutionA < PRECISION_DELTA && solutionA > -PRECISION_DELTA) {
+      return [xA, yA];
+    }
+
+    // The three circumferences intersect at a single point
+    if (solutionB < PRECISION_DELTA && solutionB > -PRECISION_DELTA) {
+      return [xB, yB];
+    }
+
+    // There may be possible positions
+    return null;
   }
 
   private getMessages(satellites: SatelliteMessage[]): string[][] {
