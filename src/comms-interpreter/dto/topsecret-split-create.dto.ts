@@ -23,5 +23,5 @@ export class TopsecretSplitCreateDto {
 
 export const TopsecretSplitCreateDtoSchema = joi.object({
   distance: joi.number().required(),
-  message: joi.array().items(joi.string().allow('')),
+  message: joi.array().items(joi.string().allow('')).required(),
 });
