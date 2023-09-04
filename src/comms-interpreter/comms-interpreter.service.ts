@@ -209,35 +209,27 @@ export class CommsInterpreterService {
 
   private getMessage(messages: string[][]): string | null {
     this.logger.log('Decoding message...');
+    const sortedMessages = messages.sort((a, b) => b.length - a.length);
+    const maxLength = Math.max(
+      ...sortedMessages.map((message) => message.length),
+    );
+    const msg = [];
 
-    const messageLength = messages.reduce(
-      (max, message) => Math.max(max, message.length),
-      0,
+    for (let x = 0; x < maxLength; x++) {
+      for (let z = 0; z < messages.length; z++) {
+        if (!isEmpty(sortedMessages[z][x])) {
+          msg.push(sortedMessages[z][x]);
+        }
+      }
+    }
+
+    const messageLength = Math.min(
+      ...messages.map((message) => message.length),
     );
 
-    if (messageLength === 0) {
-      this.logger.error('No messages to decode');
-
-      return null;
-    }
-    const decodedMessage = [];
-    let error = false;
-
-    for (let i = 0; i < messageLength; i++) {
-      const words = messages.map((message) => message[i] || '');
-      const word = words.find((word) => word !== '');
-
-      if (!word) {
-        error = true;
-        this.logger.error(`Partial message: ${decodedMessage.join(' ')}`);
-
-        break;
-      }
-      decodedMessage.push(word);
-    }
-
-    if (error) {
-      this.logger.error('Error while decoding message. Incomplete message.');
+    const decodedMessage = [...new Set(msg)];
+    if (decodedMessage.length < messageLength) {
+      this.logger.error(`Partial message: ${decodedMessage.join(' ')}`);
 
       return null;
     }
