@@ -34,3 +34,8 @@ $ npm run test
 # e2e tests
 $ npm run test:e2e
 ```
+
+## Insomnia Collection
+
+You can download the insomnia collection to test this app in aws or in the local environment
+[here](https://github.com/RamiGordon/comms-interceptor/blob/main/insomnia/insomnia_comms_interceptor.json)
