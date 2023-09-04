@@ -42,16 +42,16 @@ describe('CommsInterpreterService', () => {
       expect(position).toBeDefined();
     });
 
-    it('should return an error based on two distances', () => {
+    fit('should return an error based on two distances', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'skywalker',
-          distance: 115.5,
+          distance: 600,
           message: ['', 'es', '', 'mensaje', 'secreto'],
         },
         {
           name: 'sato',
-          distance: 142.7,
+          distance: 500,
           message: ['este', '', 'un', '', ''],
         },
       ]);

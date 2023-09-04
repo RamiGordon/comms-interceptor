@@ -7,6 +7,7 @@ import { isEmpty } from 'lodash';
 import { TopsecretResponseDto } from './dto/topsecret-response.dto';
 import {
   PRECISION_DELTA,
+  SatelliteName,
   kenobiLocation,
   satoLocation,
   skywalkerLocation,
@@ -20,7 +21,9 @@ export class CommsInterpreterService {
   topSecret(satteliteMessagesDto: TopsecretDto): TopsecretResponseDto {
     const distances = this.getDistances(satteliteMessagesDto.satellites);
     const position = this.getLocation(distances);
-    const messages = this.getMessages(satteliteMessagesDto.satellites);
+    const messages = this.getMessages(
+      satteliteMessagesDto.satellites.filter((value) => !isEmpty(value)),
+    );
     const message = this.getMessage(messages);
 
     if (!position || !message) {
@@ -57,7 +60,20 @@ export class CommsInterpreterService {
 
   decodeMessageAndPosition(): TopsecretResponseDto {
     const satelliteMessages = this.satelliteDataService.findAll();
-    const satelliteMessagesDto = new TopsecretDto(satelliteMessages);
+    const kenobiMessage = satelliteMessages.find(
+      (satellite) => satellite.name === SatelliteName.KENOBI,
+    );
+    const satoMessage = satelliteMessages.find(
+      (satellite) => satellite.name === SatelliteName.SATO,
+    );
+    const skywalkerMessage = satelliteMessages.find(
+      (satellite) => satellite.name === SatelliteName.SKYWALKER,
+    );
+    const satelliteMessagesDto = new TopsecretDto([
+      kenobiMessage,
+      satoMessage,
+      skywalkerMessage,
+    ]);
     const response = this.topSecret(satelliteMessagesDto);
 
     if (!isEmpty(response)) {
@@ -68,34 +84,66 @@ export class CommsInterpreterService {
   }
 
   private getDistances(satellites: SatelliteMessage[]): number[] {
-    return satellites.map((satellite) => satellite.distance);
+    return satellites
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((satellite) => satellite?.distance);
   }
 
   private getLocation(distances: number[]): number[] | number[][] | null {
-    const [Kx, Ky] = kenobiLocation;
-    const [skyX, skyY] = skywalkerLocation;
-    const [Sx, Sy] = satoLocation;
-    const [Dk, Dsky, Ds] = distances;
+    const distancesLengh = distances.filter(
+      (value) => typeof value === 'number',
+    );
 
-    const A = (Ky - Sy) / (Kx - Sx);
+    if (distancesLengh.length < 2) {
+      return null;
+    }
+
+    let satellite_A: number[] = [];
+    let satellite_B: number[] = [];
+    let satellite_C: number[] = [];
+
+    const [kenobiDistance, satoDistance, skywalkerDistance] = distances;
+    if (distancesLengh.length === 3) {
+      satellite_A = [...kenobiLocation, kenobiDistance];
+      satellite_B = [...satoLocation, satoDistance];
+      satellite_C = [...skywalkerLocation, skywalkerDistance];
+    }
+
+    if (isEmpty(kenobiDistance)) {
+      satellite_A = [...satoLocation, satoDistance];
+      satellite_B = [...skywalkerLocation, skywalkerDistance];
+    }
+
+    if (isEmpty(satoDistance)) {
+      satellite_A = [...kenobiLocation, kenobiDistance];
+      satellite_B = [...skywalkerLocation, skywalkerDistance];
+    }
+
+    if (isEmpty(skywalkerDistance)) {
+      satellite_A = [...kenobiLocation, kenobiDistance];
+      satellite_B = [...satoLocation, satoDistance];
+    }
+
+    const A =
+      (satellite_A[1] - satellite_B[1]) / (satellite_A[0] - satellite_B[0]);
     const B =
-      (-Math.pow(Kx, 2) -
-        Math.pow(Ky, 2) +
-        Math.pow(Sx, 2) +
-        Math.pow(Sy, 2) +
-        Math.pow(Dk, 2) -
-        Math.pow(Ds, 2)) /
-      (2 * Kx - 2 * Sx);
+      (-Math.pow(satellite_A[0], 2) -
+        Math.pow(satellite_A[1], 2) +
+        Math.pow(satellite_B[0], 2) +
+        Math.pow(satellite_B[1], 2) +
+        Math.pow(satellite_A[2], 2) -
+        Math.pow(satellite_B[2], 2)) /
+      (2 * satellite_A[0] - 2 * satellite_B[0]);
 
     // Bhaskara constants
     const a = Math.pow(A, 2) + 1;
-    const b = -2 * A * B - 2 * Kx * A + 2 * Ky;
+    const b = -2 * A * B - 2 * satellite_A[0] * A + 2 * satellite_A[1];
     const c =
-      2 * Kx * B +
+      2 * satellite_A[0] * B +
       Math.pow(B, 2) +
-      Math.pow(Kx, 2) +
-      Math.pow(Ky, 2) -
-      Math.pow(Dk, 2);
+      Math.pow(satellite_A[0], 2) +
+      Math.pow(satellite_A[1], 2) -
+      Math.pow(satellite_A[2], 2);
 
     // Bhaskara delta
     const delta = Math.pow(b, 2) - 4 * a * c;
@@ -113,22 +161,42 @@ export class CommsInterpreterService {
     const xA = -yA * A + B;
     const xB = -yB * A + B;
 
-    const solutionA =
-      Math.pow(skyX + xA, 2) + Math.pow(skyY + yA, 2) - Math.pow(Dsky, 2);
-    const solutionB =
-      Math.pow(skyX + xB, 2) + Math.pow(skyY + yB, 2) - Math.pow(Dsky, 2);
+    if (satellite_C.length === 0) {
+      this.logger.log(
+        'There may be possible positions because we have 2 satellites in place',
+      );
+      return [
+        [xA, yA],
+        [xB, yB],
+      ];
+    }
+
+    const solution_A =
+      Math.pow(satellite_C[0] + xA, 2) +
+      Math.pow(satellite_C[1] + yA, 2) -
+      Math.pow(satellite_C[2], 2);
+    const solution_B =
+      Math.pow(satellite_C[0] + xB, 2) +
+      Math.pow(satellite_C[1] + yB, 2) -
+      Math.pow(satellite_C[2], 2);
 
     // The three circumferences intersect at a single point
-    if (solutionA < PRECISION_DELTA && solutionA > -PRECISION_DELTA) {
+    if (solution_A < PRECISION_DELTA && solution_A > -PRECISION_DELTA) {
+      this.logger.log(`Imperial ship found!: (${xA}, ${yA})`);
+
       return [xA, yA];
     }
 
     // The three circumferences intersect at a single point
-    if (solutionB < PRECISION_DELTA && solutionB > -PRECISION_DELTA) {
+    if (solution_B < PRECISION_DELTA && solution_B > -PRECISION_DELTA) {
+      this.logger.log(`Imperial ship found!: (${xB}, ${yB})`);
+
       return [xB, yB];
     }
 
-    // There may be possible positions
+    this.logger.log(
+      `One of the satellites capture the distance in a wrong way`,
+    );
     return [
       [xA, yA],
       [xB, yB],
