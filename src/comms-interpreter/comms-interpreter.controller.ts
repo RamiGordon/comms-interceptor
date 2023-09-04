@@ -11,7 +11,10 @@ import {
 import { CommsInterpreterService } from './comms-interpreter.service';
 import { TopsecretDto, TopsecretDtoSchema } from './dto/topsecret.dto';
 import { JoiValidationPipe } from '../pipes/joi-validation.pipe';
-import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
+import {
+  TopsecretSplitCreateDto,
+  TopsecretSplitCreateDtoSchema,
+} from './dto/topsecret-split-create.dto';
 import { TopsecretResponseDto } from './dto/topsecret-response.dto';
 import { ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 
@@ -38,7 +41,6 @@ export class CommsInterpreterController {
     return this.commsInterpreterService.topSecret(satelliteMessagesDto);
   }
 
-  // TODO: add joi validation schema
   @Post('topsecret_split/:satellite_name')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
@@ -48,7 +50,8 @@ export class CommsInterpreterController {
   @ApiBody({ type: TopsecretSplitCreateDto })
   captureSatelliteMessage(
     @Param('satellite_name') satelliteName: string,
-    @Body() topsecretSplitCreateDto: TopsecretSplitCreateDto,
+    @Body(new JoiValidationPipe(TopsecretSplitCreateDtoSchema))
+    topsecretSplitCreateDto: TopsecretSplitCreateDto,
   ) {
     return this.commsInterpreterService.captureSatelliteMessage(
       satelliteName,
