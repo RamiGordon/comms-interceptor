@@ -28,6 +28,12 @@ export class CommsInterpreterService {
         "There is not enough information to determine the message or the sender's position.",
       );
     }
+
+    if (typeof position[0] !== 'number' || typeof position[1] !== 'number') {
+      throw new NotFoundException(
+        `There is not enough information to determine the exact sender's position. Those are two possible solutions: { (${position[0]}) ; (${position[1]}) }`,
+      );
+    }
     const [x, y] = position;
 
     return { position: { x, y }, message };
@@ -65,7 +71,7 @@ export class CommsInterpreterService {
     return satellites.map((satellite) => satellite.distance);
   }
 
-  private getLocation(distances: number[]): number[] | null {
+  private getLocation(distances: number[]): number[] | number[][] | null {
     const [Kx, Ky] = kenobiLocation;
     const [skyX, skyY] = skywalkerLocation;
     const [Sx, Sy] = satoLocation;
@@ -123,7 +129,10 @@ export class CommsInterpreterService {
     }
 
     // There may be possible positions
-    return null;
+    return [
+      [xA, yA],
+      [xB, yB],
+    ];
   }
 
   private getMessages(satellites: SatelliteMessage[]): string[][] {
