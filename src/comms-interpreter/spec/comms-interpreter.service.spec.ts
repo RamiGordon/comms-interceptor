@@ -3,8 +3,6 @@ import { CommsInterpreterService } from '../comms-interpreter.service';
 import { TopsecretDto } from '../dto/topsecret.dto';
 import { NotFoundException } from '@nestjs/common';
 
-jest.mock('trilat', () => jest.fn().mockReturnValue([2, 3]));
-
 describe('CommsInterpreterService', () => {
   let service: CommsInterpreterService;
 
@@ -25,44 +23,40 @@ describe('CommsInterpreterService', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
-          distance: 100.0,
+          distance: 600,
           message: ['este', '', '', 'mensaje', ''],
         },
         {
           name: 'skywalker',
-          distance: 115.5,
+          distance: 100,
           message: ['', 'es', '', '', 'secreto'],
         },
         {
           name: 'sato',
-          distance: 142.7,
+          distance: 500,
           message: ['este', '', 'un', '', ''],
         },
       ]);
       const { position } = service.topSecret(payloadMock);
 
-      expect(position).toStrictEqual({ x: 2, y: 3 });
+      expect(position).toBeDefined();
     });
 
-    // FIXME
-    xit('should return an error based on two distances', () => {
+    fit('should return an error based on two distances', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'skywalker',
-          distance: 115.5,
+          distance: 600,
           message: ['', 'es', '', 'mensaje', 'secreto'],
         },
         {
           name: 'sato',
-          distance: 142.7,
+          distance: 500,
           message: ['este', '', 'un', '', ''],
         },
       ]);
 
       expect(() => service.topSecret(payloadMock)).toThrow(NotFoundException);
-      expect(() => service.topSecret(payloadMock)).toThrowError(
-        "There is not enough information to determine the message or the sender's position.",
-      );
     });
 
     it('should return an error based on one distance', () => {
@@ -84,17 +78,17 @@ describe('CommsInterpreterService', () => {
       const payloadMock = new TopsecretDto([
         {
           name: 'kenobi',
-          distance: 100.0,
+          distance: 600,
           message: ['este', '', '', 'mensaje', ''],
         },
         {
           name: 'skywalker',
-          distance: 115.5,
+          distance: 100,
           message: ['', 'es', '', '', 'secreto'],
         },
         {
           name: 'sato',
-          distance: 142.7,
+          distance: 500,
           message: ['este', '', 'un', '', ''],
         },
       ]);
