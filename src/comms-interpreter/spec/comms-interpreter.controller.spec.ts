@@ -44,8 +44,10 @@ describe('CommsInterpreterController', () => {
           message: ['este', '', 'un', '', ''],
         },
       ]);
-
-      const topsecretSpy = jest.spyOn(service, 'topSecret');
+      const mockResponse = { position: { x: 2, y: 3 }, message: '' };
+      const topsecretSpy = jest
+        .spyOn(service, 'topSecret')
+        .mockReturnValue(mockResponse);
 
       controller.topsecret(payloadMock);
       expect(topsecretSpy).toHaveBeenCalled();
