@@ -3,8 +3,6 @@ import { CommsInterpreterService } from '../comms-interpreter.service';
 import { TopsecretDto } from '../dto/topsecret.dto';
 import { NotFoundException } from '@nestjs/common';
 
-jest.mock('trilat', () => jest.fn().mockReturnValue([2, 3]));
-
 describe('CommsInterpreterService', () => {
   let service: CommsInterpreterService;
 
