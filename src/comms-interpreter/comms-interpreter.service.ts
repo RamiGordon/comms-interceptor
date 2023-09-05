@@ -12,6 +12,14 @@ import {
   satoLocation,
   skywalkerLocation,
 } from '../utils/satellite-locations.stub';
+import {
+  ICalculateBhaskaraConstants,
+  ICalculateBhaskaraConstantsResponse,
+  ICalculateCeoefficientsResponse,
+  ICalculateCoordinatesResponse,
+  ICalculateSatelliteLocations,
+  ICalculateSolution,
+} from './interfaces/Locations';
 
 @Injectable()
 export class CommsInterpreterService {
@@ -114,6 +122,10 @@ export class CommsInterpreterService {
     return decodedMessage.join(' ');
   }
 
+  private getMessagesData(satellites: SatelliteMessage[]): string[][] {
+    return satellites.map((satellite) => satellite.message);
+  }
+
   private getLocation(distances: number[]): number[] | number[][] | null {
     const distancesLength = distances.filter(
       (value) => typeof value === 'number',
@@ -124,12 +136,12 @@ export class CommsInterpreterService {
     }
     const [kenobiDistance, satoDistance, skywalkerDistance] = distances;
     const [satellite_A, satellite_B, satellite_C] =
-      this.calculateSatelliteLocations(
+      this.calculateSatelliteLocations({
         kenobiDistance,
         satoDistance,
         skywalkerDistance,
         distancesLength,
-      );
+      });
 
     const coordinates = this.calculateCoordinates(satellite_A, satellite_B);
 
@@ -187,16 +199,12 @@ export class CommsInterpreterService {
       .map((satellite) => satellite?.distance);
   }
 
-  private getMessagesData(satellites: SatelliteMessage[]): string[][] {
-    return satellites.map((satellite) => satellite.message);
-  }
-
-  private calculateSatelliteLocations(
-    kenobiDistance: number,
-    satoDistance: number,
-    skywalkerDistance: number,
-    distancesLength: number,
-  ): number[][] {
+  private calculateSatelliteLocations({
+    kenobiDistance,
+    satoDistance,
+    skywalkerDistance,
+    distancesLength,
+  }: ICalculateSatelliteLocations): number[][] {
     if (distancesLength === 3) {
       return [
         [...kenobiLocation, kenobiDistance],
@@ -230,7 +238,7 @@ export class CommsInterpreterService {
   private calculateCeoefficients(
     satellite_A: number[],
     satellite_B: number[],
-  ): { A: number; B: number } {
+  ): ICalculateCeoefficientsResponse {
     const A =
       (satellite_A[1] - satellite_B[1]) / (satellite_A[0] - satellite_B[0]);
     const B =
@@ -245,11 +253,11 @@ export class CommsInterpreterService {
     return { A, B };
   }
 
-  private calculateBhaskaraConstants({ A, B, satellite_A }): {
-    a: number;
-    b: number;
-    c: number;
-  } {
+  private calculateBhaskaraConstants({
+    A,
+    B,
+    satellite_A,
+  }: ICalculateBhaskaraConstants): ICalculateBhaskaraConstantsResponse {
     const a = Math.pow(A, 2) + 1;
     const b = -2 * A * B - 2 * satellite_A[0] * A + 2 * satellite_A[1];
     const c =
@@ -265,12 +273,7 @@ export class CommsInterpreterService {
   private calculateCoordinates(
     satellite_A: number[],
     satellite_B: number[],
-  ): {
-    xA: number;
-    yA: number;
-    xB: number;
-    yB: number;
-  } | null {
+  ): ICalculateCoordinatesResponse | null {
     const { A, B } = this.calculateCeoefficients(satellite_A, satellite_B);
 
     const { a, b, c } = this.calculateBhaskaraConstants({ A, B, satellite_A });
@@ -293,15 +296,7 @@ export class CommsInterpreterService {
     return { xA, yA, xB, yB };
   }
 
-  private calculateSolution({
-    satellite,
-    x,
-    y,
-  }: {
-    satellite: number[];
-    x: number;
-    y: number;
-  }): number {
+  private calculateSolution({ satellite, x, y }: ICalculateSolution): number {
     return (
       Math.pow(satellite[0] + x, 2) +
       Math.pow(satellite[1] + y, 2) -
@@ -309,7 +304,7 @@ export class CommsInterpreterService {
     );
   }
 
-  private isSolutionValid(solution): boolean {
+  private isSolutionValid(solution: number): boolean {
     return solution < PRECISION_DELTA && solution > -PRECISION_DELTA;
   }
 }
