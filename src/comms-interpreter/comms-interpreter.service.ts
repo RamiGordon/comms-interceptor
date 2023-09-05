@@ -114,6 +114,24 @@ export class CommsInterpreterService {
     return decodedMessage.join(' ');
   }
 
+  private calculateCeoefficients(
+    satellite_A: number[],
+    satellite_B: number[],
+  ): { A: number; B: number } {
+    const A =
+      (satellite_A[1] - satellite_B[1]) / (satellite_A[0] - satellite_B[0]);
+    const B =
+      (-Math.pow(satellite_A[0], 2) -
+        Math.pow(satellite_A[1], 2) +
+        Math.pow(satellite_B[0], 2) +
+        Math.pow(satellite_B[1], 2) +
+        Math.pow(satellite_A[2], 2) -
+        Math.pow(satellite_B[2], 2)) /
+      (2 * satellite_A[0] - 2 * satellite_B[0]);
+
+    return { A, B };
+  }
+
   private getLocation(distances: number[]): number[] | number[][] | null {
     const distancesLength = distances.filter(
       (value) => typeof value === 'number',
@@ -131,16 +149,7 @@ export class CommsInterpreterService {
         distancesLength,
       );
 
-    const A =
-      (satellite_A[1] - satellite_B[1]) / (satellite_A[0] - satellite_B[0]);
-    const B =
-      (-Math.pow(satellite_A[0], 2) -
-        Math.pow(satellite_A[1], 2) +
-        Math.pow(satellite_B[0], 2) +
-        Math.pow(satellite_B[1], 2) +
-        Math.pow(satellite_A[2], 2) -
-        Math.pow(satellite_B[2], 2)) /
-      (2 * satellite_A[0] - 2 * satellite_B[0]);
+    const { A, B } = this.calculateCeoefficients(satellite_A, satellite_B);
 
     // Bhaskara constants
     const a = Math.pow(A, 2) + 1;
