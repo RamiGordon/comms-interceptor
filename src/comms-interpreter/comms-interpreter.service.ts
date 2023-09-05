@@ -21,7 +21,7 @@ export class CommsInterpreterService {
   topSecret(satteliteMessagesDto: TopsecretDto): TopsecretResponseDto {
     const distances = this.getDistances(satteliteMessagesDto.satellites);
     const position = this.getLocation(distances);
-    const messages = this.getMessages(
+    const messages = this.getMessagesData(
       satteliteMessagesDto.satellites.filter((value) => !isEmpty(value)),
     );
     const message = this.getMessage(messages);
@@ -83,46 +83,89 @@ export class CommsInterpreterService {
     return response;
   }
 
-  private getDistances(satellites: SatelliteMessage[]): number[] {
-    return satellites
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((satellite) => satellite?.distance);
-  }
+  private getMessage(messages: string[][]): string | null {
+    this.logger.log('Decoding message...');
+    const sortedMessages = messages.sort((a, b) => b.length - a.length);
+    const maxLength = Math.max(
+      ...sortedMessages.map((message) => message.length),
+    );
+    const msg = [];
 
-  private getLocation(distances: number[]): number[] | number[][] | null {
-    const distancesLengh = distances.filter(
-      (value) => typeof value === 'number',
+    for (let x = 0; x < maxLength; x++) {
+      for (let z = 0; z < messages.length; z++) {
+        if (!isEmpty(sortedMessages[z][x])) {
+          msg.push(sortedMessages[z][x]);
+        }
+      }
+    }
+
+    const messageLength = Math.min(
+      ...messages.map((message) => message.length),
     );
 
-    if (distancesLengh.length < 2) {
+    const decodedMessage = [...new Set(msg)];
+    if (decodedMessage.length < messageLength) {
+      this.logger.error(`Partial message: ${decodedMessage.join(' ')}`);
+
       return null;
     }
 
-    let satellite_A: number[] = [];
-    let satellite_B: number[] = [];
-    let satellite_C: number[] = [];
+    this.logger.log(`Message decoded: ${decodedMessage.join(' ')}`);
+    return decodedMessage.join(' ');
+  }
 
-    const [kenobiDistance, satoDistance, skywalkerDistance] = distances;
-    if (distancesLengh.length === 3) {
-      satellite_A = [...kenobiLocation, kenobiDistance];
-      satellite_B = [...satoLocation, satoDistance];
-      satellite_C = [...skywalkerLocation, skywalkerDistance];
+  private calculateSatelliteLocations(
+    kenobiDistance: number,
+    satoDistance: number,
+    skywalkerDistance: number,
+    distancesLength: number,
+  ): number[][] {
+    if (distancesLength === 3) {
+      return [
+        [...kenobiLocation, kenobiDistance],
+        [...satoLocation, satoDistance],
+        [...skywalkerLocation, skywalkerDistance],
+      ];
     }
 
     if (isEmpty(kenobiDistance)) {
-      satellite_A = [...satoLocation, satoDistance];
-      satellite_B = [...skywalkerLocation, skywalkerDistance];
+      return [
+        [...satoLocation, satoDistance],
+        [...skywalkerLocation, skywalkerDistance],
+      ];
     }
 
     if (isEmpty(satoDistance)) {
-      satellite_A = [...kenobiLocation, kenobiDistance];
-      satellite_B = [...skywalkerLocation, skywalkerDistance];
+      return [
+        [...kenobiLocation, kenobiDistance],
+        [...skywalkerLocation, skywalkerDistance],
+      ];
     }
 
     if (isEmpty(skywalkerDistance)) {
-      satellite_A = [...kenobiLocation, kenobiDistance];
-      satellite_B = [...satoLocation, satoDistance];
+      return [
+        [...kenobiLocation, kenobiDistance],
+        [...satoLocation, satoDistance],
+      ];
     }
+  }
+
+  private getLocation(distances: number[]): number[] | number[][] | null {
+    const distancesLength = distances.filter(
+      (value) => typeof value === 'number',
+    ).length;
+
+    if (distancesLength < 2) {
+      return null;
+    }
+    const [kenobiDistance, satoDistance, skywalkerDistance] = distances;
+    const [satellite_A, satellite_B, satellite_C] =
+      this.calculateSatelliteLocations(
+        kenobiDistance,
+        satoDistance,
+        skywalkerDistance,
+        distancesLength,
+      );
 
     const A =
       (satellite_A[1] - satellite_B[1]) / (satellite_A[0] - satellite_B[0]);
@@ -161,7 +204,7 @@ export class CommsInterpreterService {
     const xA = -yA * A + B;
     const xB = -yB * A + B;
 
-    if (satellite_C.length === 0) {
+    if (!satellite_C) {
       this.logger.log(
         'There may be possible positions because we have 2 satellites in place',
       );
@@ -203,38 +246,13 @@ export class CommsInterpreterService {
     ];
   }
 
-  private getMessages(satellites: SatelliteMessage[]): string[][] {
-    return satellites.map((satellite) => satellite.message);
+  private getDistances(satellites: SatelliteMessage[]): number[] {
+    return satellites
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((satellite) => satellite?.distance);
   }
 
-  private getMessage(messages: string[][]): string | null {
-    this.logger.log('Decoding message...');
-    const sortedMessages = messages.sort((a, b) => b.length - a.length);
-    const maxLength = Math.max(
-      ...sortedMessages.map((message) => message.length),
-    );
-    const msg = [];
-
-    for (let x = 0; x < maxLength; x++) {
-      for (let z = 0; z < messages.length; z++) {
-        if (!isEmpty(sortedMessages[z][x])) {
-          msg.push(sortedMessages[z][x]);
-        }
-      }
-    }
-
-    const messageLength = Math.min(
-      ...messages.map((message) => message.length),
-    );
-
-    const decodedMessage = [...new Set(msg)];
-    if (decodedMessage.length < messageLength) {
-      this.logger.error(`Partial message: ${decodedMessage.join(' ')}`);
-
-      return null;
-    }
-
-    this.logger.log(`Message decoded: ${decodedMessage.join(' ')}`);
-    return decodedMessage.join(' ');
+  private getMessagesData(satellites: SatelliteMessage[]): string[][] {
+    return satellites.map((satellite) => satellite.message);
   }
 }
