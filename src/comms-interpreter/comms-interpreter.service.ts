@@ -155,20 +155,23 @@ export class CommsInterpreterService {
       this.logger.log(
         'There may be possible positions because we have 2 satellites in place',
       );
+
       return [
         [xA, yA],
         [xB, yB],
       ];
     }
 
-    const solution_A =
-      Math.pow(satellite_C[0] + xA, 2) +
-      Math.pow(satellite_C[1] + yA, 2) -
-      Math.pow(satellite_C[2], 2);
-    const solution_B =
-      Math.pow(satellite_C[0] + xB, 2) +
-      Math.pow(satellite_C[1] + yB, 2) -
-      Math.pow(satellite_C[2], 2);
+    const solution_A = this.calculateSolution({
+      satellite: satellite_C,
+      x: xA,
+      y: yA,
+    });
+    const solution_B = this.calculateSolution({
+      satellite: satellite_C,
+      x: xB,
+      y: yB,
+    });
 
     // The three circumferences intersect at a single point
     if (solution_A < PRECISION_DELTA && solution_A > -PRECISION_DELTA) {
@@ -301,5 +304,21 @@ export class CommsInterpreterService {
     const xB = -yB * A + B;
 
     return { xA, yA, xB, yB };
+  }
+
+  private calculateSolution({
+    satellite,
+    x,
+    y,
+  }: {
+    satellite: number[];
+    x: number;
+    y: number;
+  }): number {
+    return (
+      Math.pow(satellite[0] + x, 2) +
+      Math.pow(satellite[1] + y, 2) -
+      Math.pow(satellite[2], 2)
+    );
   }
 }
