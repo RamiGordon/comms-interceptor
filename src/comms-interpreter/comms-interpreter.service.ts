@@ -173,15 +173,13 @@ export class CommsInterpreterService {
       y: yB,
     });
 
-    // The three circumferences intersect at a single point
-    if (solution_A < PRECISION_DELTA && solution_A > -PRECISION_DELTA) {
+    if (this.isSolutionValid(solution_A)) {
       this.logger.log(`Imperial ship found!: (${xA}, ${yA})`);
 
       return [xA, yA];
     }
 
-    // The three circumferences intersect at a single point
-    if (solution_B < PRECISION_DELTA && solution_B > -PRECISION_DELTA) {
+    if (this.isSolutionValid(solution_B)) {
       this.logger.log(`Imperial ship found!: (${xB}, ${yB})`);
 
       return [xB, yB];
@@ -320,5 +318,9 @@ export class CommsInterpreterService {
       Math.pow(satellite[1] + y, 2) -
       Math.pow(satellite[2], 2)
     );
+  }
+
+  private isSolutionValid(solution): boolean {
+    return solution < PRECISION_DELTA && solution > -PRECISION_DELTA;
   }
 }
