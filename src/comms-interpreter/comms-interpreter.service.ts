@@ -133,7 +133,6 @@ export class CommsInterpreterService {
 
     const { A, B } = this.calculateCeoefficients(satellite_A, satellite_B);
 
-    // Bhaskara constants
     const { a, b, c } = this.calculateBhaskaraConstants({ A, B, satellite_A });
 
     // Bhaskara delta
@@ -144,13 +143,13 @@ export class CommsInterpreterService {
       return null;
     }
 
-    // Bhaskara
-    const yA = (-b + Math.sqrt(delta)) / (2 * a);
-    const yB = (-b - Math.sqrt(delta)) / (2 * a);
-
-    // radical axis
-    const xA = -yA * A + B;
-    const xB = -yB * A + B;
+    const { xA, yA, xB, yB } = this.calculateCoordinates({
+      a,
+      b,
+      delta,
+      A,
+      B,
+    });
 
     if (!satellite_C) {
       this.logger.log(
@@ -273,5 +272,34 @@ export class CommsInterpreterService {
       Math.pow(satellite_A[2], 2);
 
     return { a, b, c };
+  }
+
+  private calculateCoordinates({
+    a,
+    b,
+    delta,
+    A,
+    B,
+  }: {
+    a: number;
+    b: number;
+    delta: number;
+    A: number;
+    B: number;
+  }): {
+    xA: number;
+    yA: number;
+    xB: number;
+    yB: number;
+  } {
+    // Bhaskara
+    const yA = (-b + Math.sqrt(delta)) / (2 * a);
+    const yB = (-b - Math.sqrt(delta)) / (2 * a);
+
+    // radical axis
+    const xA = -yA * A + B;
+    const xB = -yB * A + B;
+
+    return { xA, yA, xB, yB };
   }
 }
