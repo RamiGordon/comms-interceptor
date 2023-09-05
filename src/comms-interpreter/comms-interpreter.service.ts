@@ -134,14 +134,7 @@ export class CommsInterpreterService {
     const { A, B } = this.calculateCeoefficients(satellite_A, satellite_B);
 
     // Bhaskara constants
-    const a = Math.pow(A, 2) + 1;
-    const b = -2 * A * B - 2 * satellite_A[0] * A + 2 * satellite_A[1];
-    const c =
-      2 * satellite_A[0] * B +
-      Math.pow(B, 2) +
-      Math.pow(satellite_A[0], 2) +
-      Math.pow(satellite_A[1], 2) -
-      Math.pow(satellite_A[2], 2);
+    const { a, b, c } = this.calculateBhaskaraConstants({ A, B, satellite_A });
 
     // Bhaskara delta
     const delta = Math.pow(b, 2) - 4 * a * c;
@@ -263,5 +256,22 @@ export class CommsInterpreterService {
       (2 * satellite_A[0] - 2 * satellite_B[0]);
 
     return { A, B };
+  }
+
+  private calculateBhaskaraConstants({ A, B, satellite_A }): {
+    a: number;
+    b: number;
+    c: number;
+  } {
+    const a = Math.pow(A, 2) + 1;
+    const b = -2 * A * B - 2 * satellite_A[0] * A + 2 * satellite_A[1];
+    const c =
+      2 * satellite_A[0] * B +
+      Math.pow(B, 2) +
+      Math.pow(satellite_A[0], 2) +
+      Math.pow(satellite_A[1], 2) -
+      Math.pow(satellite_A[2], 2);
+
+    return { a, b, c };
   }
 }
