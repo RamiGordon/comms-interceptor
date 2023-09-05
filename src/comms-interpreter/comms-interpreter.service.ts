@@ -114,42 +114,6 @@ export class CommsInterpreterService {
     return decodedMessage.join(' ');
   }
 
-  private calculateSatelliteLocations(
-    kenobiDistance: number,
-    satoDistance: number,
-    skywalkerDistance: number,
-    distancesLength: number,
-  ): number[][] {
-    if (distancesLength === 3) {
-      return [
-        [...kenobiLocation, kenobiDistance],
-        [...satoLocation, satoDistance],
-        [...skywalkerLocation, skywalkerDistance],
-      ];
-    }
-
-    if (isEmpty(kenobiDistance)) {
-      return [
-        [...satoLocation, satoDistance],
-        [...skywalkerLocation, skywalkerDistance],
-      ];
-    }
-
-    if (isEmpty(satoDistance)) {
-      return [
-        [...kenobiLocation, kenobiDistance],
-        [...skywalkerLocation, skywalkerDistance],
-      ];
-    }
-
-    if (isEmpty(skywalkerDistance)) {
-      return [
-        [...kenobiLocation, kenobiDistance],
-        [...satoLocation, satoDistance],
-      ];
-    }
-  }
-
   private getLocation(distances: number[]): number[] | number[][] | null {
     const distancesLength = distances.filter(
       (value) => typeof value === 'number',
@@ -254,5 +218,41 @@ export class CommsInterpreterService {
 
   private getMessagesData(satellites: SatelliteMessage[]): string[][] {
     return satellites.map((satellite) => satellite.message);
+  }
+
+  private calculateSatelliteLocations(
+    kenobiDistance: number,
+    satoDistance: number,
+    skywalkerDistance: number,
+    distancesLength: number,
+  ): number[][] {
+    if (distancesLength === 3) {
+      return [
+        [...kenobiLocation, kenobiDistance],
+        [...satoLocation, satoDistance],
+        [...skywalkerLocation, skywalkerDistance],
+      ];
+    }
+
+    if (isEmpty(kenobiDistance)) {
+      return [
+        [...satoLocation, satoDistance],
+        [...skywalkerLocation, skywalkerDistance],
+      ];
+    }
+
+    if (isEmpty(satoDistance)) {
+      return [
+        [...kenobiLocation, kenobiDistance],
+        [...skywalkerLocation, skywalkerDistance],
+      ];
+    }
+
+    if (isEmpty(skywalkerDistance)) {
+      return [
+        [...kenobiLocation, kenobiDistance],
+        [...satoLocation, satoDistance],
+      ];
+    }
   }
 }
