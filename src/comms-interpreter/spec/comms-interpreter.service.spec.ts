@@ -169,5 +169,30 @@ describe('CommsInterpreterService', () => {
         "There is not enough information to determine the message or the sender's position.",
       );
     });
+
+    it('case 2: should return an error if the distances are too far away', () => {
+      const payloadMock = new TopsecretDto([
+        {
+          name: 'kenobi',
+          distance: 100,
+          message: ['', 'the', '', 'be', '', 'you', ''],
+        },
+        {
+          name: 'skywalker',
+          distance: 100,
+          message: ['may', '', '', '', '', 'you'],
+        },
+        {
+          name: 'sato',
+          distance: 100,
+          message: ['', '', 'force', '', '', ''],
+        },
+      ]);
+
+      expect(() => service.topSecret(payloadMock)).toThrow(NotFoundException);
+      expect(() => service.topSecret(payloadMock)).toThrowError(
+        "There is not enough information to determine the message or the sender's position.",
+      );
+    });
   });
 });

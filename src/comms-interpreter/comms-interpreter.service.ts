@@ -131,25 +131,12 @@ export class CommsInterpreterService {
         distancesLength,
       );
 
-    const { A, B } = this.calculateCeoefficients(satellite_A, satellite_B);
+    const coordinates = this.calculateCoordinates(satellite_A, satellite_B);
 
-    const { a, b, c } = this.calculateBhaskaraConstants({ A, B, satellite_A });
-
-    // Bhaskara delta
-    const delta = Math.pow(b, 2) - 4 * a * c;
-    const error = Math.sign(delta) === -1;
-
-    if (error) {
+    if (!coordinates) {
       return null;
     }
-
-    const { xA, yA, xB, yB } = this.calculateCoordinates({
-      a,
-      b,
-      delta,
-      A,
-      B,
-    });
+    const { xA, yA, xB, yB } = coordinates;
 
     if (!satellite_C) {
       this.logger.log(
@@ -275,24 +262,26 @@ export class CommsInterpreterService {
     return { a, b, c };
   }
 
-  private calculateCoordinates({
-    a,
-    b,
-    delta,
-    A,
-    B,
-  }: {
-    a: number;
-    b: number;
-    delta: number;
-    A: number;
-    B: number;
-  }): {
+  private calculateCoordinates(
+    satellite_A: number[],
+    satellite_B: number[],
+  ): {
     xA: number;
     yA: number;
     xB: number;
     yB: number;
-  } {
+  } | null {
+    const { A, B } = this.calculateCeoefficients(satellite_A, satellite_B);
+
+    const { a, b, c } = this.calculateBhaskaraConstants({ A, B, satellite_A });
+
+    // Bhaskara delta
+    const delta = Math.pow(b, 2) - 4 * a * c;
+    const error = Math.sign(delta) === -1;
+
+    if (error) {
+      return null;
+    }
     // Bhaskara
     const yA = (-b + Math.sqrt(delta)) / (2 * a);
     const yB = (-b - Math.sqrt(delta)) / (2 * a);
