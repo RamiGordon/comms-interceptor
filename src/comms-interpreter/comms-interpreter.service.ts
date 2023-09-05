@@ -12,6 +12,14 @@ import {
   satoLocation,
   skywalkerLocation,
 } from '../utils/satellite-locations.stub';
+import {
+  ICalculateBhaskaraConstants,
+  ICalculateBhaskaraConstantsResponse,
+  ICalculateCeoefficientsResponse,
+  ICalculateCoordinatesResponse,
+  ICalculateSatelliteLocations,
+  ICalculateSolution,
+} from './interfaces/Locations';
 
 @Injectable()
 export class CommsInterpreterService {
@@ -21,7 +29,7 @@ export class CommsInterpreterService {
   topSecret(satteliteMessagesDto: TopsecretDto): TopsecretResponseDto {
     const distances = this.getDistances(satteliteMessagesDto.satellites);
     const position = this.getLocation(distances);
-    const messages = this.getMessages(
+    const messages = this.getMessagesData(
       satteliteMessagesDto.satellites.filter((value) => !isEmpty(value)),
     );
     const message = this.getMessage(messages);
@@ -83,130 +91,6 @@ export class CommsInterpreterService {
     return response;
   }
 
-  private getDistances(satellites: SatelliteMessage[]): number[] {
-    return satellites
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((satellite) => satellite?.distance);
-  }
-
-  private getLocation(distances: number[]): number[] | number[][] | null {
-    const distancesLengh = distances.filter(
-      (value) => typeof value === 'number',
-    );
-
-    if (distancesLengh.length < 2) {
-      return null;
-    }
-
-    let satellite_A: number[] = [];
-    let satellite_B: number[] = [];
-    let satellite_C: number[] = [];
-
-    const [kenobiDistance, satoDistance, skywalkerDistance] = distances;
-    if (distancesLengh.length === 3) {
-      satellite_A = [...kenobiLocation, kenobiDistance];
-      satellite_B = [...satoLocation, satoDistance];
-      satellite_C = [...skywalkerLocation, skywalkerDistance];
-    }
-
-    if (isEmpty(kenobiDistance)) {
-      satellite_A = [...satoLocation, satoDistance];
-      satellite_B = [...skywalkerLocation, skywalkerDistance];
-    }
-
-    if (isEmpty(satoDistance)) {
-      satellite_A = [...kenobiLocation, kenobiDistance];
-      satellite_B = [...skywalkerLocation, skywalkerDistance];
-    }
-
-    if (isEmpty(skywalkerDistance)) {
-      satellite_A = [...kenobiLocation, kenobiDistance];
-      satellite_B = [...satoLocation, satoDistance];
-    }
-
-    const A =
-      (satellite_A[1] - satellite_B[1]) / (satellite_A[0] - satellite_B[0]);
-    const B =
-      (-Math.pow(satellite_A[0], 2) -
-        Math.pow(satellite_A[1], 2) +
-        Math.pow(satellite_B[0], 2) +
-        Math.pow(satellite_B[1], 2) +
-        Math.pow(satellite_A[2], 2) -
-        Math.pow(satellite_B[2], 2)) /
-      (2 * satellite_A[0] - 2 * satellite_B[0]);
-
-    // Bhaskara constants
-    const a = Math.pow(A, 2) + 1;
-    const b = -2 * A * B - 2 * satellite_A[0] * A + 2 * satellite_A[1];
-    const c =
-      2 * satellite_A[0] * B +
-      Math.pow(B, 2) +
-      Math.pow(satellite_A[0], 2) +
-      Math.pow(satellite_A[1], 2) -
-      Math.pow(satellite_A[2], 2);
-
-    // Bhaskara delta
-    const delta = Math.pow(b, 2) - 4 * a * c;
-    const error = Math.sign(delta) === -1;
-
-    if (error) {
-      return null;
-    }
-
-    // Bhaskara
-    const yA = (-b + Math.sqrt(delta)) / (2 * a);
-    const yB = (-b - Math.sqrt(delta)) / (2 * a);
-
-    // radical axis
-    const xA = -yA * A + B;
-    const xB = -yB * A + B;
-
-    if (satellite_C.length === 0) {
-      this.logger.log(
-        'There may be possible positions because we have 2 satellites in place',
-      );
-      return [
-        [xA, yA],
-        [xB, yB],
-      ];
-    }
-
-    const solution_A =
-      Math.pow(satellite_C[0] + xA, 2) +
-      Math.pow(satellite_C[1] + yA, 2) -
-      Math.pow(satellite_C[2], 2);
-    const solution_B =
-      Math.pow(satellite_C[0] + xB, 2) +
-      Math.pow(satellite_C[1] + yB, 2) -
-      Math.pow(satellite_C[2], 2);
-
-    // The three circumferences intersect at a single point
-    if (solution_A < PRECISION_DELTA && solution_A > -PRECISION_DELTA) {
-      this.logger.log(`Imperial ship found!: (${xA}, ${yA})`);
-
-      return [xA, yA];
-    }
-
-    // The three circumferences intersect at a single point
-    if (solution_B < PRECISION_DELTA && solution_B > -PRECISION_DELTA) {
-      this.logger.log(`Imperial ship found!: (${xB}, ${yB})`);
-
-      return [xB, yB];
-    }
-
-    this.logger.log(
-      `One of the satellites capture the distance in a wrong way`,
-    );
-    return [
-      [xA, yA],
-      [xB, yB],
-    ];
-  }
-
-  private getMessages(satellites: SatelliteMessage[]): string[][] {
-    return satellites.map((satellite) => satellite.message);
-  }
-
   private getMessage(messages: string[][]): string | null {
     this.logger.log('Decoding message...');
     const sortedMessages = messages.sort((a, b) => b.length - a.length);
@@ -236,5 +120,191 @@ export class CommsInterpreterService {
 
     this.logger.log(`Message decoded: ${decodedMessage.join(' ')}`);
     return decodedMessage.join(' ');
+  }
+
+  private getMessagesData(satellites: SatelliteMessage[]): string[][] {
+    return satellites.map((satellite) => satellite.message);
+  }
+
+  private getLocation(distances: number[]): number[] | number[][] | null {
+    const distancesLength = distances.filter(
+      (value) => typeof value === 'number',
+    ).length;
+
+    if (distancesLength < 2) {
+      return null;
+    }
+    const [kenobiDistance, satoDistance, skywalkerDistance] = distances;
+    const [satellite_A, satellite_B, satellite_C] =
+      this.calculateSatelliteLocations({
+        kenobiDistance,
+        satoDistance,
+        skywalkerDistance,
+        distancesLength,
+      });
+
+    const coordinates = this.calculateCoordinates(satellite_A, satellite_B);
+
+    if (!coordinates) {
+      return null;
+    }
+    const { xA, yA, xB, yB } = coordinates;
+
+    if (!satellite_C) {
+      this.logger.log(
+        'There may be possible positions because we have 2 satellites in place',
+      );
+
+      return [
+        [xA, yA],
+        [xB, yB],
+      ];
+    }
+
+    const solution_A = this.calculateSolution({
+      satellite: satellite_C,
+      x: xA,
+      y: yA,
+    });
+    const solution_B = this.calculateSolution({
+      satellite: satellite_C,
+      x: xB,
+      y: yB,
+    });
+
+    if (this.isSolutionValid(solution_A)) {
+      this.logger.log(`Imperial ship found!: (${xA}, ${yA})`);
+
+      return [xA, yA];
+    }
+
+    if (this.isSolutionValid(solution_B)) {
+      this.logger.log(`Imperial ship found!: (${xB}, ${yB})`);
+
+      return [xB, yB];
+    }
+
+    this.logger.log(
+      `One of the satellites capture the distance in a wrong way`,
+    );
+    return [
+      [xA, yA],
+      [xB, yB],
+    ];
+  }
+
+  private getDistances(satellites: SatelliteMessage[]): number[] {
+    return satellites
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((satellite) => satellite?.distance);
+  }
+
+  private calculateSatelliteLocations({
+    kenobiDistance,
+    satoDistance,
+    skywalkerDistance,
+    distancesLength,
+  }: ICalculateSatelliteLocations): number[][] {
+    if (distancesLength === 3) {
+      return [
+        [...kenobiLocation, kenobiDistance],
+        [...satoLocation, satoDistance],
+        [...skywalkerLocation, skywalkerDistance],
+      ];
+    }
+
+    if (isEmpty(kenobiDistance)) {
+      return [
+        [...satoLocation, satoDistance],
+        [...skywalkerLocation, skywalkerDistance],
+      ];
+    }
+
+    if (isEmpty(satoDistance)) {
+      return [
+        [...kenobiLocation, kenobiDistance],
+        [...skywalkerLocation, skywalkerDistance],
+      ];
+    }
+
+    if (isEmpty(skywalkerDistance)) {
+      return [
+        [...kenobiLocation, kenobiDistance],
+        [...satoLocation, satoDistance],
+      ];
+    }
+  }
+
+  private calculateCeoefficients(
+    satellite_A: number[],
+    satellite_B: number[],
+  ): ICalculateCeoefficientsResponse {
+    const A =
+      (satellite_A[1] - satellite_B[1]) / (satellite_A[0] - satellite_B[0]);
+    const B =
+      (-Math.pow(satellite_A[0], 2) -
+        Math.pow(satellite_A[1], 2) +
+        Math.pow(satellite_B[0], 2) +
+        Math.pow(satellite_B[1], 2) +
+        Math.pow(satellite_A[2], 2) -
+        Math.pow(satellite_B[2], 2)) /
+      (2 * satellite_A[0] - 2 * satellite_B[0]);
+
+    return { A, B };
+  }
+
+  private calculateBhaskaraConstants({
+    A,
+    B,
+    satellite_A,
+  }: ICalculateBhaskaraConstants): ICalculateBhaskaraConstantsResponse {
+    const a = Math.pow(A, 2) + 1;
+    const b = -2 * A * B - 2 * satellite_A[0] * A + 2 * satellite_A[1];
+    const c =
+      2 * satellite_A[0] * B +
+      Math.pow(B, 2) +
+      Math.pow(satellite_A[0], 2) +
+      Math.pow(satellite_A[1], 2) -
+      Math.pow(satellite_A[2], 2);
+
+    return { a, b, c };
+  }
+
+  private calculateCoordinates(
+    satellite_A: number[],
+    satellite_B: number[],
+  ): ICalculateCoordinatesResponse | null {
+    const { A, B } = this.calculateCeoefficients(satellite_A, satellite_B);
+
+    const { a, b, c } = this.calculateBhaskaraConstants({ A, B, satellite_A });
+
+    // Bhaskara delta
+    const delta = Math.pow(b, 2) - 4 * a * c;
+    const error = Math.sign(delta) === -1;
+
+    if (error) {
+      return null;
+    }
+    // Bhaskara
+    const yA = (-b + Math.sqrt(delta)) / (2 * a);
+    const yB = (-b - Math.sqrt(delta)) / (2 * a);
+
+    // radical axis
+    const xA = -yA * A + B;
+    const xB = -yB * A + B;
+
+    return { xA, yA, xB, yB };
+  }
+
+  private calculateSolution({ satellite, x, y }: ICalculateSolution): number {
+    return (
+      Math.pow(satellite[0] + x, 2) +
+      Math.pow(satellite[1] + y, 2) -
+      Math.pow(satellite[2], 2)
+    );
+  }
+
+  private isSolutionValid(solution: number): boolean {
+    return solution < PRECISION_DELTA && solution > -PRECISION_DELTA;
   }
 }
