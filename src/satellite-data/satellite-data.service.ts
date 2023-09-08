@@ -1,5 +1,5 @@
+import { SatelliteMessage } from '@comms-interpreter/entities/satellite-message.entity';
 import { Injectable } from '@nestjs/common';
-import { SatelliteMessage } from '../comms-interpreter/entities/satellite-message.entity';
 import { isEmpty } from 'lodash';
 
 @Injectable()

@@ -1,17 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { TopsecretDto } from './dto/topsecret.dto';
-import { SatelliteMessage } from './entities/satellite-message.entity';
-import { SatelliteDataService } from '../satellite-data/satellite-data.service';
+import { SatelliteDataService } from '@satellite-data/satellite-data.service';
 import { TopsecretSplitCreateDto } from './dto/topsecret-split-create.dto';
-import { isEmpty } from 'lodash';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { SatelliteMessage } from './entities/satellite-message.entity';
 import { TopsecretResponseDto } from './dto/topsecret-response.dto';
-import {
-  PRECISION_DELTA,
-  SatelliteName,
-  kenobiLocation,
-  satoLocation,
-  skywalkerLocation,
-} from '../utils/satellite-locations.stub';
+import { TopsecretDto } from './dto/topsecret.dto';
+import { isEmpty } from 'lodash';
 import {
   ICalculateBhaskaraConstants,
   ICalculateBhaskaraConstantsResponse,
@@ -20,6 +13,13 @@ import {
   ICalculateSatelliteLocations,
   ICalculateSolution,
 } from './interfaces/Locations';
+import {
+  PRECISION_DELTA,
+  SatelliteName,
+  kenobiLocation,
+  satoLocation,
+  skywalkerLocation,
+} from '@utils/satellite-locations.stub';
 
 @Injectable()
 export class CommsInterpreterService {
