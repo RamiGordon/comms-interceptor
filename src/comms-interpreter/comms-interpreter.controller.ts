@@ -1,22 +1,22 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UsePipes,
-  Param,
-  HttpCode,
-  HttpStatus,
-  Get,
-} from '@nestjs/common';
-import { CommsInterpreterService } from './comms-interpreter.service';
 import { TopsecretDto, TopsecretDtoSchema } from './dto/topsecret.dto';
-import { JoiValidationPipe } from '../pipes/joi-validation.pipe';
+import { CommsInterpreterService } from './comms-interpreter.service';
+import { TopsecretResponseDto } from './dto/topsecret-response.dto';
+import { ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+import { JoiValidationPipe } from '@pipes/joi-validation.pipe';
 import {
   TopsecretSplitCreateDto,
   TopsecretSplitCreateDtoSchema,
 } from './dto/topsecret-split-create.dto';
-import { TopsecretResponseDto } from './dto/topsecret-response.dto';
-import { ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UsePipes,
+} from '@nestjs/common';
 
 @ApiTags('comms-interpreter')
 @Controller('comms-interpreter')

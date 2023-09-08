@@ -16,6 +16,15 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
-  }
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@app/*": ["src/app/*"],
+      "@comms-interpreter/*": ["src/comms-interpreter/*"],
+      "@middleware/*": ["src/middleware/*"],
+      "@pipes/*": ["src/pipes/*"],
+      "@satellite-data/*": ["src/satellite-data/*"],
+      "@utils/*": ["src/utils/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
 }
